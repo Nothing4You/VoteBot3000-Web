@@ -1,25 +1,32 @@
 <?php
 require_once('src/MySQL.class.php');
+require_once('config.php');
 
-$db = new MySQL();
-$dayDbFormat = date("Y-m-d");
-$data = $db->Select("datensaetze",array("tag"=>$dayDbFormat));
+$db = new MySQL($host, $user, $password, $database, $port);
+$data = $db->Select("votes", array(), array(), '', " where date = CURRENT_DATE()");
 
 if($data)
 {
 
-	$ort = array(1=>0,2=>0,3=>0,4=>0);
+	$ort = array(1=>0,2=>0,3=>0,5=>0,6=>0);
 	$zeit = array(1200=>0,1215=>0,1230=>0);
+	$voter = array();
 
 	foreach($data as $vote)
 	{
-		if($vote['ort']>0)
+		if($vote['location']>0)
 		{
-			if(isset($ort[$vote['ort']])) $ort[$vote['ort']]++;
-			else $ort[$vote['ort']] = 1;
-			
-			if(isset($zeit[$vote['zeit']])) $zeit[$vote['zeit']]++;
-			else $zeit[$vote['zeit']] = 1;
+			if(isset($ort[$vote['location']])) $ort[$vote['location']]++;
+			else $ort[$vote['location']] = 1;
+
+			if(isset($zeit[$vote['time']])) $zeit[$vote['time']]++;
+			else $zeit[$vote['time']] = 1;
+
+			$namedb = $db->Select("users", array("skypename" => $vote['user']));
+			if($namedb) $name = $namedb[0]["name"];
+			else $name = $vote['user'];
+
+			if(!in_array($vote['user'], $voter)) $voter[$vote['user']] = utf8_encode($name);
 		}
 	}
 
@@ -40,7 +47,6 @@ if($data)
 			$value = $o;
 			$ortWinner = $key;
 			$first = false;
-			
 		}
 		else
 		{
@@ -60,7 +66,7 @@ if($data)
 	{
 		$ortString = "";
 	}
-	else 
+	else
 	{
 		switch($ortWinner)
 		{
@@ -73,8 +79,11 @@ if($data)
 			case 3:
 				$ortString = "in der Rohmühle";
 				break;
-			case 4:
-				$ortString = "im Paten";
+			case 5:
+				$ortString = "in der Rheinalm";
+				break;
+			case 6:
+				$ortString = "im Kameha Next Level Restaurant";
 				break;
 		}
 	}
@@ -106,7 +115,7 @@ if($data)
 	{
 		$zeitString = "";
 	}
-	else 
+	else
 	{
 		switch($zeitWinner)
 		{
@@ -124,7 +133,7 @@ if($data)
 }
 else
 {
-	$ortDataString = "0,0,0,0";
+	$ortDataString = "0,0,0,0,0,0";
 	$zeitDataString = "0,0,0";
 }
 ?>
@@ -135,10 +144,11 @@ else
 		
 		<title>Heute | Webstats Mittagessen</title>
 		
-		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+		<link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
 		<script src="js/jquery.min.js"></script>
 		<script src="js/Chart.min.js"></script>
 		<link rel="stylesheet" href="css/style.css" />
+		<link rel='icon' href='/favicon.ico' type='image/x-icon'/ >
 	</head>
 	<body>
 		<div class="only-chart-container">
@@ -151,10 +161,18 @@ else
 			</div>
 			<div class="title">
 			</div>
+			<?php if(isset($voter)) { ?><div class="voter">
+				Gevotet von:
+				<ul>
+					<?php foreach($voter as $v): ?>
+					<li><?php echo $v; ?>
+					<?php endforeach; ?>
+				</ul>
+			</div><?php } ?>
 		</div>
 		<script>
 			var barData = {
-				labels: ["L'Osteria","Kantine","Rohmühle","Der Pate"],
+				labels: ["L'Osteria","Kantine","Rohmühle","Rheinalm","Kameha NLR"],
 				datasets: [
 					{
 						label: "Heute",
@@ -163,16 +181,16 @@ else
 			            highlightFill: "rgba(151,187,205,0.75)",
 			            highlightStroke: "rgba(151,187,205,1)",
 						data: [<?php echo $ortDataString; ?>]
-					}           
+					}
 				]
 			};
-			
+
 			var options = {
 					scaleGridLineColor: "rgba(255,255,255,0.1)"
 			}
-		
+
 			var todayChartWhere = new Chart($('#today').get(0).getContext("2d")).Bar(barData, options);
-			
+
 			var barData = {
 					labels: ["12:00","12:15","12:30"],
 					datasets: [
@@ -183,17 +201,15 @@ else
 				            highlightFill: "rgba(151,187,205,0.75)",
 				            highlightStroke: "rgba(151,187,205,1)",
 							data: [<?php echo $zeitDataString; ?>]
-						}           
+						}
 					]
 				};
-				
+
 				var options = {
 						scaleGridLineColor: "rgba(255,255,255,0.1)"
 				}
-			
+
 				var todayChartWhen = new Chart($('#when').get(0).getContext("2d")).Bar(barData, options);
 		</script>
-		
-		
 	</body>
 </html>

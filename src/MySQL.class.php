@@ -9,12 +9,13 @@
  class MySQL {
 
 	// Declaration & Configuration
-	private $host = "localhost";
-	private $user = "root";
-	private $password = "";
-	private $database = "skypebot";
-     
-    public $debug = false;
+	private $host;
+	private $user;
+	private $password;
+	private $database;
+	private $port;
+
+    public $debug;
 
 	private $db;
 
@@ -24,10 +25,17 @@
 	 *
 	 * connects to database
 	 **/
-	public function __construct()
+	public function __construct($host, $user, $password, $database, $port = 3306, $debug = false)
 	{
+		$this->host = $host;
+		$this->user = $user;
+		$this->password = $password;
+		$this->database = $database;
+		$this->port = $port;
+		$this->debug = $debug;
+
 		// connect with mysqli
-		$this->db = new mysqli($this->host, $this->user, $this->password, $this->database);
+		$this->db = new mysqli($this->host, $this->user, $this->password, $this->database, $this->port);
 
 		// check connection
 		if(mysqli_connect_errno()){
@@ -392,7 +400,3 @@
 
  }
 
-
-
-
-?>

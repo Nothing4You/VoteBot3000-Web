@@ -4,5 +4,8 @@
 body { background: url(../img/bg.png) repeat; }
 .only-chart-container { width: 1000px; max-width: 100%; padding: 20px 10px; margin: 0 auto; }
 .title { font-size: 48px; text-align: center; width: 100%; margin-bottom: 30px; margin-top: 30px; clear: both; }
-.chart { width: 50%; float: left; }
-.canvases { height: 260px; clear: both; }
+.chart { width: 50%; float: left; height: 300px; }
+.canvases { height: 320px; clear: both; }
+.voter { font-size: 24px; }
+.voter ul { margin-top: 8px; }
+.voter li { font-weight: bold; list-style-type: circle; font-size: 20px; }
